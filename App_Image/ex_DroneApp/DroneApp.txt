@@ -1,0 +1,14 @@
+
+
+UI on/off button Menu bar
+터치 시 이미지가 10% 작아지고 손가락을 땠을 때 원상태로 복귀 (부드럽게)
+up bar below 이미 다 해당 landing, robot arm, emotion, camerabutton, control_joystick_change, control_camera_change, camera_change 
+
+Drone status number
+폰트 NanumBarunGothicOTF bold / size 10pt  1366 * 750 기준
+
+
+-웬만한 글씨 폰트는 '나눔고딕체'입니다.
+-네이버에 나눔고딕체 치셔서 OTF 파일로 다운 받으시면 됩니
+-메뉴를 눌렀을 때 아이콘들은 양옆에서 슬라이딩하면서 부드럽게 나옵니다.
+
