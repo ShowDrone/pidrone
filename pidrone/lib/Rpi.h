@@ -77,9 +77,9 @@ STATUS gps_status, imu_status, sonar_status;
 LED led;
 RPI rpi = { 0,OK };
 
-DC dcgm = { 1,-90,-90,90,0.5,2.5,OK };  //	mode of gymbal
-DC dcgp = { 2,0,-90,90,0.5,2.5,OK };    //	gymbal pitch
-DC dcgh = { 3,0,-90,90,0.5,2.5,OK };    //	gymbal heading
+DC dcgm = { 1,-90,-90,90,0.5,2.5,OK };  //  mode of gymbal
+DC dcgp = { 2,0,-90,90,0.5,2.5,OK };    //  gymbal pitch
+DC dcgh = { 3,0,-90,90,0.5,2.5,OK };    //  gymbal heading
 
 DC dc0 = { 4,0,-90,90,0.5,2.5,OK };
 DC dc1 = { 5,0,-90,90,0.5,2.5,OK };
@@ -97,12 +97,11 @@ PID yaw = { 8,4,4,6,628,0.01,0,0,0,0,1,2,0,0,0 };
 PLANT plant = { 0.1,10,100,0,0,0 };
 
 int pwid;
-int pin_base = 300;
+int pin_base = 300; // ID에 더하는 값
 int max_pwm = 4096;
-int pwmfreq = 50;
-int onbit = 0;
-int llcount = 0;
-int lcount = 6;
+int pwmfreq = 50; // PWM 출력 속도
+int startCount = 0;
+int endCount = 6;
 float yawgain = 0.0;
 int bloffset = 0;
 float jgainr = 15;
@@ -111,8 +110,8 @@ float jgainy = 5;
 float jgainb = 2000;
 float jgaingp = 90;
 float jgaingh = 90;
-char *user = "pi";			// Raspberry Pi ID
-char *pw = "vkdlemfhs";		// Raspberry Pi Password
+char *user = "pi";      // Raspberry Pi ID
+char *pw = "vkdlemfhs";   // Raspberry Pi Password
 
 
 void setGain(PID& pid, float pnew, float inew, float dnew) {
@@ -156,8 +155,8 @@ int calcTicks(float ms, int hertz) {
 	return (int)(max_pwm*ms / cycle + 0.5f);
 }
 float map(float input, float min, float max, float pmin, float pmax) {
-	float rinput = input - min;
-	return pmin + (pmax - pmin) / (max - min)*rinput;
+	float target = input - min;
+	return pmin + (pmax - pmin) / (max - min)*target;
 }
 
 void setThrottle(BL& bl, int input) {
@@ -177,17 +176,17 @@ void setAngle(DC& dc, float input) {
 }
 
 void lBeep() {
-	if (lcount > 0) {
-		if (llcount < lcount) {
-			if (llcount % 2 == 0)
-				setAngle(bz, 0);	  // buz on                                                                                                                                                                                        
+	if (endCount > 0) {
+		if (startCount < endCount) {
+			if (startCount % 2 == 0)
+				setAngle(bz, 0);    // buz on                                                                                                                                                                                        
 			else
 				setAngle(bz, 255); // buz off
-			llcount++;
+			startCount++;
 		}
 		else {
-			llcount = 0;
-			lcount = 0;
+			startCount = 0;
+			endCount = 0;
 		}
 	}
 }

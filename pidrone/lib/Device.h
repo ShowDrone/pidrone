@@ -14,8 +14,7 @@
 
 
 
-class Device
-{
+class Device {
 
 public: 
 	uint16_t id;
@@ -30,8 +29,7 @@ public:
 
 
 
-class IMU : public Device
-{
+class IMU : public Device {
 	
 public:
 	IMU(DWORD _id);
@@ -42,8 +40,7 @@ public:
 
 
 
-class DeviceException: public std::exception
-{
+class DeviceException: public std::exception {
 public:
 	virtual const char* what() const throw();
 };

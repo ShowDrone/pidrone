@@ -20,13 +20,11 @@ uint16_t displayBuffer2[8];
         int letter=0;
         int y=0;
 //Reverse the bits
-unsigned  char  reverseBits(unsigned  char num)
-{
+unsigned  char  reverseBits(unsigned  char num) {
     unsigned  char count = sizeof(num) * 8 - 1;
     unsigned  char reverse_num = num;
     num >>= 1;
-    while(num)
-    {
+    while(num) {
        reverse_num <<= 1;
        reverse_num |= num & 1;
        num >>= 1;
@@ -38,53 +36,41 @@ unsigned  char  reverseBits(unsigned  char num)
 
 
 
-int displayImage(__u16 bmp[], int res, int daddress, int file)
-{
+int displayImage(__u16 bmp[], int res, int daddress, int file) {
         int i;
-        for(i=0; i<8; i++)
-        {
+        for(i=0; i<8; i++) {
              block[i] = (bmp[i]&0xfe) >>1 |
              (bmp[i]&0x01) << 7;
         }
         res = i2c_smbus_write_i2c_block_data(file, daddress, 16,
                 (__u8 *)block);
 }
-void ledScroll(uint16_t  dBuffer[8][15*8],int length, int& letter,int& y)
-{
-			if(letter<(length-1))
-			{
-				if(y<8)
-				{
-    				for(int i=0; i<8; i++)
-    				{
+void ledScroll(uint16_t  dBuffer[8][15*8],int length, int& letter,int& y) {
+			if(letter<(length-1)) {
+				if(y<8)	{
+    				for(int i=0; i<8; i++) {
 					bitShifted[i] = (dBuffer[i][letter]) << y | (dBuffer[i][letter+1]) >> (8-y);
 					bitShifted[i]  = reverseBits(bitShifted[i]);
 					}
 		        	displayImage(bitShifted,res, daddress, file);
 	    			y++;
 				}
-				else
-				{
+				else {
 					letter++;
 					y=0;
-				}
-					
-					
+				}			
 			}
-			else
-			{
+			else {
 				letter=0;
 					
 			}
 }
 
-void ledDraw(uint16_t  dBuffer[8],const char *text)
-{
+void ledDraw(uint16_t  dBuffer[8],const char *text) {
 	int Vposition,character;
 	character=text[0]-31;
 
-	for(Vposition = 0; Vposition < 8 ; Vposition++)
-	{
+	for(Vposition = 0; Vposition < 8 ; Vposition++) {
 		dBuffer[Vposition]=FONT8x8[character][Vposition];
 		//printf("haha %i,%i= %u\r\n",Vposition,i,displayBuffer[Vposition][i]);
 			
@@ -92,28 +78,21 @@ void ledDraw(uint16_t  dBuffer[8],const char *text)
 	displayImage(dBuffer,res, daddress, file);
 }
 
-void setBuffer(const char *text,uint16_t (*dBuffer)[15*8],int& length)
-{
+void setBuffer(const char *text,uint16_t (*dBuffer)[15*8],int& length) {
 	length = (strlen(text))-2;
 	int Vposition,c,character, l;
 	
 	
-	for(int i = 0; i < length ; i++)
-	{
+	for(int i = 0; i < length ; i++) {
 		character = (text[i]-31);
-		 for(Vposition = 0; Vposition < 8 ; Vposition++)
-		 {
+		 for(Vposition = 0; Vposition < 8 ; Vposition++) {
 			dBuffer[Vposition][i]=FONT8x8[character][Vposition];
-			//printf("haha %i,%i= %u\r\n",Vposition,i,displayBuffer[Vposition][i]);
-			
+			//printf("haha %i,%i= %u\r\n",Vposition,i,displayBuffer[Vposition][i]);		
 		}
 	}
-	
-	
 }
 
-void ledinit()
-{
+void ledinit() {
 		i2cbus   = 1;
         address  = 112;
         daddress = 0;

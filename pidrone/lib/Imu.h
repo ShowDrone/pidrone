@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <RTIMULib.h>
-class IMU
-{
+class IMU {
 public:
 	uint16_t id;
     RTIMUSettings *settings;
@@ -17,7 +16,6 @@ public:
 	virtual bool RequestData();
 	virtual ~IMU();
     void GetValues((char *)& data);    
-     
    
 };
 
