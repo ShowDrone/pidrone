@@ -31,9 +31,10 @@
 #include <mosquitto.h>
 #include "gps.h"
 #include "Mqtt.h"
+#include "Calibration.h"
 
 #define MAIN_DEBUG 1  // 루프 부분 디버그 메시지 출력 정의 1이면 출력, 0이면 미출력
-
+#define CALI 1 	
 using namespace std;
 void  INThandler(int sig);
 
@@ -62,14 +63,14 @@ int main(int argc, char **argv)
 	char *imuresult;
 	bool sonarflag = true;
 
-	//interrupt for exit
+	// interrupt for exit
 	signal(SIGINT, INThandler);
 
 	//init Sonar
 	SONAR sonar0 = SONAR(sonarid0);
-	//~ SONAR sonar1=SONAR(sonarid2); 
-	//~ SONAR sonar2=SONAR(sonarid3);
-	//~ SONAR sonar3=SONAR(sonarid4);
+	//~ SONAR sonar1=SONAR(sonarid1); 
+	//~ SONAR sonar2=SONAR(sonarid2);
+	//~ SONAR sonar3=SONAR(sonarid3);
 
 	sonar0.distance = 0;
 	//~ sonar1.distance = 0;
@@ -82,13 +83,20 @@ int main(int argc, char **argv)
 	}
 
 	//init imu
+
+	if(MAIN_DEBUG == 1) {
+		printf("init Imu start\n");
+	}
+
 	RTIMUSettings *settings = new RTIMUSettings("RTIMULib");
 	RTIMU *imu = RTIMU::createIMU(settings);
+
 
 	if ((imu == NULL) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
 		printf("No IMU found\n");
 		exit(1);
 	}
+
 
 	// imu는 RTIMU 클래스 속성을 가진 변수
 	imu->IMUInit();       // 초기화
@@ -97,8 +105,16 @@ int main(int argc, char **argv)
 	imu->setAccelEnable(true);  // 가속도 ON
 	imu->setCompassEnable(true);// 지자계 ON
 
+	if(MAIN_DEBUG == 1) {
+		printf("Init Imu Complete\n");
+	}	
+
 								//init led
 	ledinit();
+
+	if(MAIN_DEBUG == 1) {
+		printf("Init Led Complete\n");
+	}
 
 	//init GPS
 	gps_init();
@@ -109,8 +125,17 @@ int main(int argc, char **argv)
 	gps.speed = 0.0;
 	gps.satellites = 0;
 
+
+	if(MAIN_DEBUG == 1) {
+		printf("Init Gps Complete\n");
+	}
+
 	//init mqtt
 	mq_init();
+
+	if(MAIN_DEBUG == 1) {
+		printf("Init Mqtt Complete\n");
+	}
 
 	//init pwm
 	pwid = pca9685Setup(pin_base, 0x40, pwmfreq); // ID 값 반환
@@ -121,7 +146,18 @@ int main(int argc, char **argv)
 	}
 	pca9685PWMReset(pwid);  // pwid로 pcb핀 리셋 
 
-							//SET throttle
+
+	if(MAIN_DEBUG == 1) {
+		printf("Init Pca9685 Complete\n");
+	}
+
+
+	if(CALI == 1) {
+		setBldcCalibration(0); // 1 = output debug msg
+		delay(1000);
+	}
+
+	//SET throttle
 	setThrottle(bl0, 0);
 	setThrottle(bl1, 0);
 
@@ -134,19 +170,30 @@ int main(int argc, char **argv)
 	setAngle(dcgh, 0);
 	setAngle(dcgp, 0);
 	//setAngle(bz,255);
-	delay(2000);      // 프로그램 안정화.
+	delay(2000);     
 
-					  //init controller
-	setLim(pitch, dc.min, dc.max);  // pitch OFFSET
-	setLim(roll, dc.min, dc.max);   // roll  OFFSET
-	setLim(yaw, -1, 1);       // yaw   OFFSET
+
+	if(MAIN_DEBUG == 1) {
+		printf("Set throttle Complete\n");
+	}
+
+
+	//init controller
+	setLim(pitch, dc0.min, dc0.max);  // pitch OFFSET
+	setLim(roll, dc0.min, dc0.max);   // roll  OFFSET
+	setLim(yaw, -1, 1);     	// yaw   OFFSET
 
 							  // 차후 변수로 변경
 	setGain(pitch, 8, 4, 4);        // pitch Gain set
 	setGain(roll, 8, 4, 4);         // roll  Gain set
 	setGain(yaw, 0.0008, 0.0004, 0.0004); // yaw   Gain set
 
-										  //~ printf("new kp %f, ki %f, kd %f\r\n",pitch.kp,pitch.ki,pitch.kd);
+	//~ printf("new kp %f, ki %f, kd %f\r\n",pitch.kp,pitch.ki,pitch.kd);
+
+	if(MAIN_DEBUG == 1) {
+		printf("init Controller Complete\n");
+	}
+
 
 	float ref = 0;
 	int cnt = 0;
@@ -154,10 +201,15 @@ int main(int argc, char **argv)
 
 	// 아래부턴 LED 관련된 부분 
 	// put all the characters of the scrolling text in a contiguous block
-	setBuffer(led.setValue, displayBuffer, length);
+	//setBuffer(led.setValue, displayBuffer, length);
 
 	for (int j = 0; j < 8; j++) {
 		printf("%u\r", j, 0, displayBuffer[j][0]);
+	}
+
+
+	if(MAIN_DEBUG == 1) {
+		printf("set Buffer Complete\n");
 	}
 
 	//~ rateTimer = displayTimer = RTMath::currentUSecsSinceEpoch();
@@ -169,6 +221,8 @@ int main(int argc, char **argv)
 	//mqtt start
 	mq_start();
 
+	if(MAIN_DEBUG == 1)
+		printf("Start Main\n");
 
 	// 무한 루프
 	while (1) {
@@ -194,6 +248,7 @@ int main(int argc, char **argv)
 		imuresult = strtok(NULL, ":");
 		yaw.y = atof(imuresult);      // yaw
 
+
 		if (cnt == 10) {
 			roll.r = 0;
 			pitch.r = 0;
@@ -208,15 +263,15 @@ int main(int argc, char **argv)
 		if (rpi.setValue == 1 || rpi.setValue == 4) {
 			getInput(pitch, pitch.r, pitch.y);
 			printf("pitch=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", pitch.y, pitch.u, pitch.up, pitch.ui, pitch.ud, pitch.r);
-			dc.setValue = pitch.u;
-			dc3.setValue = -pitch.u;
+			dc0.setValue = pitch.u;
+			dc2.setValue = -pitch.u;
 		}
 
 		if (rpi.setValue == 2 || rpi.setValue == 4) {
 			getInput(roll, roll.r, roll.y);
 			printf("roll=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", roll.y, roll.u, roll.up, roll.ui, roll.ud, roll.r);
 			dc2.setValue = roll.u;
-			dc4.setValue = -roll.u;
+			dc3.setValue = -roll.u;
 		}
 
 		if (rpi.setValue == 3 || rpi.setValue == 4) {
@@ -224,6 +279,7 @@ int main(int argc, char **argv)
 			printf("yaw=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", yaw.y, yaw.u, yaw.up, yaw.ui, yaw.ud, yaw.r);
 			yawgain = yaw.u;
 		}
+
 
 		// Throttle
 		// void setThrottle(BL& s,int input)
@@ -252,10 +308,12 @@ int main(int argc, char **argv)
 		}
 
 
+
+
 		//led scroll
 		//~ ledScroll(displayBuffer,length,letter,y);
 		//~ printf("text is %s\r\n",led.setValue);
-		ledDraw(displayBuffer2, led.setValue);
+		// ~ledDraw(displayBuffer2, led.setValue);
 
 		//~ now =RTMath::currentUSecsSinceEpoch();      
 		now = micros();
@@ -279,13 +337,13 @@ int main(int argc, char **argv)
 			//~ printf("Recievd: %s\r\n",RTMath::displayDegrees("",imuData.fusionPose));
 
 			if (MAIN_DEBUG == 1)
-				sprintf(mqbuf, "%i,%i,%i\r", sonar0.id, sonar0.distance, sonar_status);
+				printf(mqbuf, "%i,%i,%i\r", sonar0.id, sonar0.distance, sonar_status);
 			mq_send("pidrone/SONAR", mqbuf);
 			if (MAIN_DEBUG == 1)
-				sprintf(mqbuf, "%lf,%lf,%lf,%i,%lf,%i\r", gps.latitude, gps.longitude, gps.altitude, gps.satellites, gps.speed*1.8, gps_status);
+				printf(mqbuf, "%lf,%lf,%lf,%i,%lf,%i\r", gps.latitude, gps.longitude, gps.altitude, gps.satellites, gps.speed*1.8, gps_status);
 			mq_send("pidrone/GPS", mqbuf);
 			if (MAIN_DEBUG == 1)
-				sprintf(mqbuf, "%s,%i\r", RTMath::displayDegrees("", imuData.fusionPose), imu_status);
+				printf(mqbuf, "%s,%i\r", RTMath::displayDegrees("", imuData.fusionPose), imu_status);
 			mq_send("pidrone/IMU", mqbuf);
 
 			toktime = toktime / tokcnt;
@@ -293,7 +351,7 @@ int main(int argc, char **argv)
 			//~ toktime=0;
 
 			if (MAIN_DEBUG == 1)
-				sprintf(mqbuf, "measured time is %llds.\r\n", toktime);
+				printf(mqbuf, "measured time is %llds.\r\n", toktime);
 			mq_send("pidrone/PI", mqbuf);
 
 			fflush(stdout);
@@ -336,8 +394,8 @@ void  INThandler(int sig) {
 	setAngle(dc1, 0);
 	setAngle(dc2, 0);
 	setAngle(dc3, 0);
+	setAngle(cm0, 0);
 	setAngle(cm1, 0);
-	setAngle(cm2, 0);
 	setAngle(dcgm, 0);
 	setAngle(dcgh, 0);
 	setAngle(dcgp, 0);

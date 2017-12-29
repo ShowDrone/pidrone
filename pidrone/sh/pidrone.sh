@@ -1,2 +1,2 @@
 #!/bin/sh
-/home/pi/projects/pidrone/src/bin/main
+/home/pi/pidrone/src/bin/main

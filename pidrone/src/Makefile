@@ -1,10 +1,10 @@
 CC := g++
 
-EXTRAINCDIRS += -I "../iib"
-EXTRALDFLAGS += -L/usr/local/lib -L"../obj"
+EXTRAINCDIRS += -I "../inc"
+EXTRALDFLAGS += -L/usr/local/lib -L"../lib"
 EXTRALIBS += -lRTIMULib -lwiringPi -lm -lmosquitto -lwiringPiPca9685 -lpthread -lwiringPi
 
-CFLAGS += -O2
+CFLAGS += -O2 -W -Wall
 
 MYOBJS = ../obj/Sonar.o ../obj/nmea.o ../obj/gps.o ../obj/serial.o
 
@@ -26,6 +26,7 @@ clean:
 
 ../obj/nmea.o : nmea.c
 	${CC} -c $< ${CFLAGS} -o $@ ${EXTRALDFLAGS} ${EXTRALIBS} ${EXTRAINCDIRS} 
+
 
 bin/main : main.cxx
 	${CC} ${CFLAGS} $^ -o $@ ${EXTRALDFLAGS} ${EXTRALIBS} ${EXTRAINCDIRS} ${MYOBJS}
