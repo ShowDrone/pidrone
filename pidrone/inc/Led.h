@@ -16,7 +16,7 @@ int res, i2cbus, daddress, address, size, file;
 uint16_t   bitShifted[8];
 uint16_t   displayBuffer[8][15*8];
 uint16_t displayBuffer2[8];
-	int length;
+	int length = 0;
         int letter=0;
         int y=0;
 //Reverse the bits

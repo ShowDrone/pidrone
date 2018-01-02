@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include "Led.h"
 
-#define MQTT_DEBUG 1  // MQTT 부분 디버그 메시지 출력 정의 1이면 출력, 0이면 미출력
+#define MQTT_DEBUG 1 // MQTT 부분 디버그 메시지 출력 정의 1이면 출력, 0이면 미출력
 
 struct mosquitto *mosq = NULL;
 char *mqbuf = (char *)malloc(70 * sizeof(char));

@@ -1,2 +1,2 @@
 #!/bin/sh
-mosquitto_pub -h 143.248.204.35 -t pidrone/CMD/PI -m "1\r\n"
+mosquitto_sub -h 58.224.86.126 -t pidrone/PI -u pi -P vkdlemfhs -m "1\r\n"

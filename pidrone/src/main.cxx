@@ -34,7 +34,7 @@
 #include "Calibration.h"
 
 #define MAIN_DEBUG 1  // 루프 부분 디버그 메시지 출력 정의 1이면 출력, 0이면 미출력
-#define CALI 1 	
+#define CALI 0
 using namespace std;
 void  INThandler(int sig);
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 	}	
 
 								//init led
-	ledinit();
+	//ledinit();
 
 	if(MAIN_DEBUG == 1) {
 		printf("Init Led Complete\n");
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 		tokold = micros();
 
 		// imu 데이터 reading
-		while (imu->IMURead());
+		while (imu->IMURead())
 		imuData = imu->getIMUData();
 
 		// 각도를 문자열로 받아서, 분리하고 실수로 바꿔서 대입
@@ -262,21 +262,28 @@ int main(int argc, char **argv)
 		// setValue에 4를 대입할 경우엔 x, y, z all ON
 		if (rpi.setValue == 1 || rpi.setValue == 4) {
 			getInput(pitch, pitch.r, pitch.y);
-			printf("pitch=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", pitch.y, pitch.u, pitch.up, pitch.ui, pitch.ud, pitch.r);
+			if (MAIN_DEBUG == 1) {
+				printf("pitch=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", pitch.y, pitch.u, pitch.up, pitch.ui, pitch.ud, pitch.r);
+			}
 			dc0.setValue = pitch.u;
 			dc2.setValue = -pitch.u;
+			
 		}
 
 		if (rpi.setValue == 2 || rpi.setValue == 4) {
 			getInput(roll, roll.r, roll.y);
-			printf("roll=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", roll.y, roll.u, roll.up, roll.ui, roll.ud, roll.r);
-			dc2.setValue = roll.u;
+			if (MAIN_DEBUG == 1) {
+				printf("roll=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", roll.y, roll.u, roll.up, roll.ui, roll.ud, roll.r);
+			}
+			dc1.setValue = roll.u;
 			dc3.setValue = -roll.u;
 		}
 
 		if (rpi.setValue == 3 || rpi.setValue == 4) {
 			getInput(yaw, yaw.r, yaw.y);
-			printf("yaw=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", yaw.y, yaw.u, yaw.up, yaw.ui, yaw.ud, yaw.r);
+			if (MAIN_DEBUG == 1) {
+				printf("yaw=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", yaw.y, yaw.u, yaw.up, yaw.ui, yaw.ud, yaw.r);
+			}
 			yawgain = yaw.u;
 		}
 
@@ -286,7 +293,15 @@ int main(int argc, char **argv)
 		setThrottle(bl0, bl0.setValue*(1 - yawgain));   // 프롭의 차로 yaw조절 (상단)
 		setThrottle(bl1, bl1.setValue*(1 + yawgain)); // 프롭의 차로 yaw조절 (하단)
 
-													  //set angle  void(DC& dc,float input)
+		//set angle  void(DC& dc,float input)
+		
+
+
+		//setAngle(dc0, 0);
+		//setAngle(dc1, 0);
+		//setAngle(dc2, 0);
+		//setAngle(dc3, 0);
+	
 		setAngle(dc0, dc0.setValue);
 		setAngle(dc1, dc1.setValue);
 		setAngle(dc2, dc2.setValue);
@@ -336,13 +351,13 @@ int main(int argc, char **argv)
 			//~ 
 			//~ printf("Recievd: %s\r\n",RTMath::displayDegrees("",imuData.fusionPose));
 
-			if (MAIN_DEBUG == 1)
+			//if (MAIN_DEBUG == 1)
 				printf(mqbuf, "%i,%i,%i\r", sonar0.id, sonar0.distance, sonar_status);
 			mq_send("pidrone/SONAR", mqbuf);
-			if (MAIN_DEBUG == 1)
+			//if (MAIN_DEBUG == 1)
 				printf(mqbuf, "%lf,%lf,%lf,%i,%lf,%i\r", gps.latitude, gps.longitude, gps.altitude, gps.satellites, gps.speed*1.8, gps_status);
 			mq_send("pidrone/GPS", mqbuf);
-			if (MAIN_DEBUG == 1)
+			//if (MAIN_DEBUG == 1)
 				printf(mqbuf, "%s,%i\r", RTMath::displayDegrees("", imuData.fusionPose), imu_status);
 			mq_send("pidrone/IMU", mqbuf);
 
@@ -350,7 +365,7 @@ int main(int argc, char **argv)
 			tokcnt = 0;
 			//~ toktime=0;
 
-			if (MAIN_DEBUG == 1)
+			//if (MAIN_DEBUG == 1)
 				printf(mqbuf, "measured time is %llds.\r\n", toktime);
 			mq_send("pidrone/PI", mqbuf);
 

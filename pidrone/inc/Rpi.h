@@ -74,7 +74,7 @@ typedef struct Plant {
 
 
 STATUS gps_status, imu_status, sonar_status;
-LED led;
+LED led = { 0,OK };
 RPI rpi = { 0,OK };
 
 DC dcgm = { 1,-90,-90,90,0.5,2.5,OK };  //  mode of gymbal
@@ -89,8 +89,8 @@ DC cm0 = { 10,0,-90,90,1,2,OK };
 DC cm1 = { 11,0,-90,90,1,2,OK };
 DC bz = { 15,0,0,255,0,50,OK };
 
-BL bl0 = { 8,0,5000,0,2,0.7,OK };
-BL bl1 = { 9,0,5000,0,2,0.7,OK };
+BL bl0 = { 8,0,0,5000,0.7,2,OK };
+BL bl1 = { 9,0,0,5000,0.7,2,OK };
 PID pitch = { 8,4,4,6,628,0.01,0,0,0,0,1,2,0,0,0 };
 PID roll = { 8,4,4,6,628,0.01,0,0,0,0,1,2,0,0,0 };
 PID yaw = { 8,4,4,6,628,0.01,0,0,0,0,1,2,0,0,0 };
