@@ -34,7 +34,9 @@ unsigned  char  reverseBits(unsigned  char num) {
     return reverse_num;
 }
 
-
+void setLed() {
+	led.setValue = ">  ";
+}
 
 int displayImage(__u16 bmp[], int res, int daddress, int file) {
         int i;

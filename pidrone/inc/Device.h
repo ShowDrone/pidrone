@@ -11,9 +11,6 @@
 #define BYTE unsigned char
 
 
-
-
-
 class Device {
 
 public: 
@@ -26,9 +23,6 @@ public:
 
 };
 
-
-
-
 class IMU : public Device {
 	
 public:
@@ -37,8 +31,6 @@ public:
 	virtual ~IMU();
 	void GetValues(const BYTE* data1, const BYTE* data2, float& roll, float& pitch, float& yaw);
 };
-
-
 
 class DeviceException: public std::exception {
 public:

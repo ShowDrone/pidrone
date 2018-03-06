@@ -25,7 +25,6 @@
 */
 
 #include "Rpi.h"
-#include <RTIMULib.h>
 #include "Sonar.h"
 #include "Led.h"
 #include <mosquitto.h>
@@ -33,8 +32,8 @@
 #include "Mqtt.h"
 #include "Calibration.h"
 
-#define MAIN_DEBUG 1  // 루프 부분 디버그 메시지 출력 정의 1이면 출력, 0이면 미출력
-#define CALI 0
+#define MAIN_DEBUG 1  // Debug msg output
+#define CALI 0		  // execute Calibration
 using namespace std;
 void  INThandler(int sig);
 
@@ -45,78 +44,112 @@ int main(int argc, char **argv)
 	uint64_t sonarTimer;
 	uint64_t tok, tokold;
 	uint64_t toktime;
-	int tokcnt = 0;
+	int tokcnt = 1;
 	uint64_t displayTimer;
 	uint64_t now;
-	RTIMU_DATA imuData;
 
-	uint32_t ControlPeriod = 10000;   //10ms
+	uint32_t ControlPeriod = 10000;		//10ms
 	uint32_t ControlPeriod_s = 1000000; //1000ms
-	uint32_t DisplayPeriod = 100000;  //100ms
+	uint32_t DisplayPeriod = 100000;	//100ms
 	uint16_t fd;
-
-	// SONAR ID
-	uint16_t sonarid0 = 0x71;
-	uint16_t sonarid1 = 0x72;
-	uint16_t sonarid2 = 0x73;
-	uint16_t sonarid3 = 0x74;
-	char *imuresult;
-	bool sonarflag = true;
+	float ref = 0;
+	int cnt = 0;
+	bool sonarFlag = true;
 
 	// interrupt for exit
 	signal(SIGINT, INThandler);
 
-	//init Sonar
+	// init Encoder Pin
+	pinMode(dc0.encoderA, INPUT);
+	pinMode(dc0.encoderB, INPUT);
+	pinMode(dc1.encoderA, INPUT);
+	pinMode(dc1.encoderB, INPUT);
+	pinMode(dc2.encoderA, INPUT);
+	pinMode(dc2.encoderB, INPUT);
+	pinMode(dc3.encoderA, INPUT);
+	pinMode(dc3.encoderB, INPUT);
+
+	// Init Sonar ID
+	uint16_t sonarid0 = 0x71;
+	uint16_t sonarid1 = 0x72;
 	SONAR sonar0 = SONAR(sonarid0);
-	//~ SONAR sonar1=SONAR(sonarid1); 
-	//~ SONAR sonar2=SONAR(sonarid2);
-	//~ SONAR sonar3=SONAR(sonarid3);
-
+	SONAR sonar1 = SONAR(sonarid1);
 	sonar0.distance = 0;
-	//~ sonar1.distance = 0;
-	//~ sonar2.distance = 0;
-	//~ sonar3.distance = 0;
+	sonar1.distance = 0;
 
-	// wiringPi setup 실패시 프로그램 종료
-	if (wiringPiSetup() == -1) {
+
+	if (MAIN_DEBUG == 1) {
+		printf("\nPROGRAM START\n");
+	}
+
+	
+	// Setup wiringPi
+	if (wiringPiSetup() < 0) {
+		fprintf(stderr, "Unable to setup wiringPi: %s\n", strerror(errno));
 		return 1;
 	}
 
-	//init imu
-
-	if(MAIN_DEBUG == 1) {
-		printf("init Imu start\n");
+	if (wiringPiISR(dc0.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc0.encoderA ISR error occured\n", stderr);
+		return 1;
 	}
 
-	RTIMUSettings *settings = new RTIMUSettings("RTIMULib");
-	RTIMU *imu = RTIMU::createIMU(settings);
+	if (wiringPiISR(dc0.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc0.encoderB ISR error occured\n", stderr);
+		return 1;
+	}
 
+	if (wiringPiISR(dc1.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc1.encoderA ISR error occured\n", stderr);
+		return 1;
+	}
 
-	if ((imu == NULL) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
-		printf("No IMU found\n");
-		exit(1);
+	if (wiringPiISR(dc1.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc1.encoderB ISR error occured\n", stderr);
+		return 1;
+	}
+	if (wiringPiISR(dc2.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc2.encoderA ISR error occured\n", stderr);
+		return 1;
+	}
+
+	if (wiringPiISR(dc2.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc2.encoderB ISR error occured\n", stderr);
+		return 1;
+	}
+	
+	if (wiringPiISR(dc3.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc3.encoderA ISR error occured\n", stderr);
+		return 1;
+	}
+
+	if (wiringPiISR(dc3.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
+		fputs("dc3.encoderB ISR error occured\n", stderr);
+		return 1;
 	}
 
 
-	// imu는 RTIMU 클래스 속성을 가진 변수
-	imu->IMUInit();       // 초기화
-	imu->setSlerpPower(0.02); // 리딩 속도 0.02초
-	imu->setGyroEnable(true); // 자이로 ON
-	imu->setAccelEnable(true);  // 가속도 ON
-	imu->setCompassEnable(true);// 지자계 ON
+	// Init LED
+	if (MAIN_DEBUG == 1) {
+		printf("Init Led Start\n");
+	}
 
-	if(MAIN_DEBUG == 1) {
-		printf("Init Imu Complete\n");
-	}	
+	ledinit();
+	setLed();
+	setBuffer(led.setValue, displayBuffer, length);
 
-								//init led
-	//ledinit();
+	for (int j = 0; j < 8; j++) {
+		printf("%u\r", j, 0, displayBuffer[j][0]);
+	}
+
+	rateTimer = displayTimer = micros();
+	rateTimer_s = rateTimer;
 
 	if(MAIN_DEBUG == 1) {
 		printf("Init Led Complete\n");
 	}
 
-	//init GPS
+	// Init GPS
 	gps_init();
 	loc_t gps;
 	gps.latitude = 0;
@@ -125,43 +158,70 @@ int main(int argc, char **argv)
 	gps.speed = 0.0;
 	gps.satellites = 0;
 
-
 	if(MAIN_DEBUG == 1) {
 		printf("Init Gps Complete\n");
 	}
+	
 
-	//init mqtt
+	
+	// Init MQTT
+
+	if (MAIN_DEBUG == 1) {
+		printf("Init Start\n");
+	}
+
 	mq_init();
+	mq_start();
 
 	if(MAIN_DEBUG == 1) {
 		printf("Init Mqtt Complete\n");
 	}
 
-	//init pwm
-	pwid = pca9685Setup(pin_base, 0x40, pwmfreq); // ID 값 반환
+	
+	// Init PCA9685
+	if (MAIN_DEBUG == 1) {
+		printf("Init Pca9685 Start\n");
+	}
 
+	pwid = pca9685Setup(pin_base, 0x40, pwmfreq); // return ID value
 	if (pwid < 0) {
 		if (MAIN_DEBUG == 1)
-			printf("error init setup\n");  // PCA 초기화 실패시 에러 발생
+			printf("Error init setup\n");  // if pca9685Setup fails
 	}
-	pca9685PWMReset(pwid);  // pwid로 pcb핀 리셋 
+	pca9685PWMReset(pwid);  // Reset pcb9685 pin to pwid
 
 
 	if(MAIN_DEBUG == 1) {
 		printf("Init Pca9685 Complete\n");
 	}
 
-
 	if(CALI == 1) {
-		setBldcCalibration(0); // 1 = output debug msg
+		setBldcCalibration(0); // 1 = output debug msg, 0 = no output
 		delay(1000);
 	}
 
-	//SET throttle
+
+	FILE *fp;
+	fp = fopen("/home/pi/Code/pidrone/src/pidgain.txt", "a");
+	if (fp == NULL) {
+		fprintf(stderr,"Can't open pidgain.txt file\n");
+		// add basci pidgain code
+	}
+	while (!feof(fp)) {
+		fscanf(fp, "%f%f%f", &kp, &ki, &kd);
+	}
+
+
+	if (MAIN_DEBUG == 1) {
+		printf("Set Dc&Bldc start\n");
+	}
+
+	// set BLDC Motor
 	setThrottle(bl0, 0);
 	setThrottle(bl1, 0);
 
-	//set angle
+	
+	// set DC Motor
 	setAngle(dc0, 0);
 	setAngle(dc1, 0);
 	setAngle(dc2, 0);
@@ -169,139 +229,68 @@ int main(int argc, char **argv)
 	setAngle(dcgm, 0);
 	setAngle(dcgh, 0);
 	setAngle(dcgp, 0);
-	//setAngle(bz,255);
+	//~ setAngle(bz,255);
 	delay(2000);     
 
 
 	if(MAIN_DEBUG == 1) {
-		printf("Set throttle Complete\n");
+		printf("Set Dc&Bldc Complete\n");
 	}
 
 
-	//init controller
-	setLim(pitch, dc0.min, dc0.max);  // pitch OFFSET
-	setLim(roll, dc0.min, dc0.max);   // roll  OFFSET
-	setLim(yaw, -1, 1);     	// yaw   OFFSET
-
-							  // 차후 변수로 변경
-	setGain(pitch, 8, 4, 4);        // pitch Gain set
-	setGain(roll, 8, 4, 4);         // roll  Gain set
-	setGain(yaw, 0.0008, 0.0004, 0.0004); // yaw   Gain set
-
-	//~ printf("new kp %f, ki %f, kd %f\r\n",pitch.kp,pitch.ki,pitch.kd);
-
-	if(MAIN_DEBUG == 1) {
-		printf("init Controller Complete\n");
+	if (MAIN_DEBUG == 1) {
+		printf("Enter the Loop\n");
 	}
 
-
-	float ref = 0;
-	int cnt = 0;
-
-
-	// 아래부턴 LED 관련된 부분 
-	// put all the characters of the scrolling text in a contiguous block
-	//setBuffer(led.setValue, displayBuffer, length);
-
-	for (int j = 0; j < 8; j++) {
-		printf("%u\r", j, 0, displayBuffer[j][0]);
-	}
-
-
-	if(MAIN_DEBUG == 1) {
-		printf("set Buffer Complete\n");
-	}
-
-	//~ rateTimer = displayTimer = RTMath::currentUSecsSinceEpoch();
-	rateTimer = displayTimer = micros();
-	rateTimer_s = rateTimer;
-	// LED SET 끝
-
-
-	//mqtt start
-	mq_start();
-
-	if(MAIN_DEBUG == 1)
-		printf("Start Main\n");
 
 	// 무한 루프
 	while (1) {
-		//imu
-		usleep(imu->IMUGetPollInterval() * 1000);
 		tokold = micros();
 
-		// imu 데이터 reading
-		while (imu->IMURead())
-		imuData = imu->getIMUData();
-
-		// 각도를 문자열로 받아서, 분리하고 실수로 바꿔서 대입
-		imuresult = (char *)RTMath::displayDegrees("", imuData.fusionPose);
-		imuresult = strtok(imuresult, ":");
-		imuresult = strtok(NULL, ",");
-		roll.y = atof(imuresult);   // roll
-		imuresult = strtok(NULL, ":");
-
-		imuresult = strtok(NULL, ",");
-		pitch.y = atof(imuresult);    // pitch
-
-		imuresult = strtok(NULL, ":");
-		imuresult = strtok(NULL, ":");
-		yaw.y = atof(imuresult);      // yaw
-
-
-		if (cnt == 10) {
-			roll.r = 0;
-			pitch.r = 0;
-			yaw.r = yaw.y;
-			roll.yo = roll.y;
-			pitch.yo = pitch.y;
-			yaw.yo = yaw.y;
-		}
-
-		// getInput 함수는 PID 함수로 보임 Rpi.h 164번째줄 참조 getinput(PID& pid, float rnew, float ynew)
-		// setValue에 4를 대입할 경우엔 x, y, z all ON
 		if (rpi.setValue == 1 || rpi.setValue == 4) {
-			getInput(pitch, pitch.r, pitch.y);
+			
+			// Add control data read
+
+			//~ dc0.setValue = ;
+			//~ dc2.setValue = ;
+
 			if (MAIN_DEBUG == 1) {
-				printf("pitch=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", pitch.y, pitch.u, pitch.up, pitch.ui, pitch.ud, pitch.r);
+				printf("dc0.setValue=\f, dc2,setValue=\f\r\n", dc0.setValue, dc2.setValue);
 			}
-			dc0.setValue = pitch.u;
-			dc2.setValue = -pitch.u;
 			
 		}
 
 		if (rpi.setValue == 2 || rpi.setValue == 4) {
-			getInput(roll, roll.r, roll.y);
+	
+			// Add control data read
+
+			//~ dc1.setValue = ;
+			//~ dc3.setValue = ;
+
 			if (MAIN_DEBUG == 1) {
-				printf("roll=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", roll.y, roll.u, roll.up, roll.ui, roll.ud, roll.r);
+				printf("dc1.setValue=\f, dc3,setValue=\f\r\n", dc1.setValue, dc3.setValue);
 			}
-			dc1.setValue = roll.u;
-			dc3.setValue = -roll.u;
 		}
 
 		if (rpi.setValue == 3 || rpi.setValue == 4) {
-			getInput(yaw, yaw.r, yaw.y);
+
+			// Add control data read
+
+			//~ yawgain = ;
+
 			if (MAIN_DEBUG == 1) {
-				printf("yaw=%f,u=%f,up=%f,ui=%f,ud=%f,r=%f\r\n", yaw.y, yaw.u, yaw.up, yaw.ui, yaw.ud, yaw.r);
+				printf("yawgain=\f\r\n", yawgain);
 			}
-			yawgain = yaw.u;
 		}
 
+		// Edit value value
 
-		// Throttle
-		// void setThrottle(BL& s,int input)
-		setThrottle(bl0, bl0.setValue*(1 - yawgain));   // 프롭의 차로 yaw조절 (상단)
-		setThrottle(bl1, bl1.setValue*(1 + yawgain)); // 프롭의 차로 yaw조절 (하단)
-
-		//set angle  void(DC& dc,float input)
-		
+		// BLDC Motor
+		setThrottle(bl0, bl0.setValue*(1 - yawgain)); // Yaw adjustment by prop's difference (Top)
+		setThrottle(bl1, bl1.setValue*(1 + yawgain)); // Yaw adjustment by prop's difference (Bottom)
 
 
-		//setAngle(dc0, 0);
-		//setAngle(dc1, 0);
-		//setAngle(dc2, 0);
-		//setAngle(dc3, 0);
-	
+		// DC Motor
 		setAngle(dc0, dc0.setValue);
 		setAngle(dc1, dc1.setValue);
 		setAngle(dc2, dc2.setValue);
@@ -309,64 +298,53 @@ int main(int argc, char **argv)
 		setAngle(cm0, cm0.setValue);
 		setAngle(cm1, cm1.setValue);
 
-		// 짐벌
+		// Gymbol Motor
 		setAngle(dcgm, dcgm.setValue);
 		setAngle(dcgh, dcgh.setValue);
 		setAngle(dcgp, dcgp.setValue);
 
 
-		//sonar 
-		if (!sonarflag) {
-			sonar0.RequestData(); // 데이터 요청
-			sonarTimer = micros(); // 시간 저장
-			sonarflag = true;
+		// Sonar
+		if (!sonarFlag) {
+			sonar0.RequestData();  // Request Data
+			sonarTimer = micros(); // Save Time
+			sonarFlag = true;
 		}
+		
 
-
-
-
-		//led scroll
+		// Led Scroll
 		//~ ledScroll(displayBuffer,length,letter,y);
-		//~ printf("text is %s\r\n",led.setValue);
-		// ~ledDraw(displayBuffer2, led.setValue);
-
-		//~ now =RTMath::currentUSecsSinceEpoch();      
+		ledDraw(displayBuffer2, led.setValue);
 		now = micros();
-		// slow timer
 
 
-		// GPS 센서 속도(1000ms)에 맞춰서 Reading
+		// Read to gps sensor speed (1000ms)
 		if ((now - rateTimer_s) >= ControlPeriod_s) {
-			//get gps Data
-			gps_location(&gps);
+			//gps_location(&gps);
 			lBeep();
 			rateTimer_s = now;
 		}
 
 
-		// 디스플레이 속도(100ms)에 맞춰서 Reading
+
+		// Data dsiplay (100ms)
 		if ((now - displayTimer) > DisplayPeriod) {
+
 			//~ printf("in main %lf, %lf \r\n",gps.latitude, gps.longitude);    
-			//~ printf("Recievd sonar value : %u cm\n",sonar.distance);
-			//~ 
+			
+			//~ printf("Recievd sonar value : %u cm\n",sonar0.distance);
 			//~ printf("Recievd: %s\r\n",RTMath::displayDegrees("",imuData.fusionPose));
 
-			//if (MAIN_DEBUG == 1)
-				printf(mqbuf, "%i,%i,%i\r", sonar0.id, sonar0.distance, sonar_status);
+			//sprintf(mqbuf, "%i,%i,%i\r", sonar0.id, sonar0.distance, sonar_status);
 			mq_send("pidrone/SONAR", mqbuf);
-			//if (MAIN_DEBUG == 1)
-				printf(mqbuf, "%lf,%lf,%lf,%i,%lf,%i\r", gps.latitude, gps.longitude, gps.altitude, gps.satellites, gps.speed*1.8, gps_status);
+			//sprintf(mqbuf, "%lf,%lf,%lf,%i,%lf,%i\r", gps.latitude, gps.longitude, gps.altitude, gps.satellites, gps.speed*1.8, gps_status);
 			mq_send("pidrone/GPS", mqbuf);
-			//if (MAIN_DEBUG == 1)
-				printf(mqbuf, "%s,%i\r", RTMath::displayDegrees("", imuData.fusionPose), imu_status);
-			mq_send("pidrone/IMU", mqbuf);
+
 
 			toktime = toktime / tokcnt;
 			tokcnt = 0;
-			//~ toktime=0;
 
-			//if (MAIN_DEBUG == 1)
-				printf(mqbuf, "measured time is %llds.\r\n", toktime);
+			printf(mqbuf, "measured time is %llds.\r\n", toktime);
 			mq_send("pidrone/PI", mqbuf);
 
 			fflush(stdout);
@@ -377,15 +355,14 @@ int main(int argc, char **argv)
 		toktime = toktime + tok - tokold;
 		tokcnt++;
 
-		// 10ms마다 한번씩 동작 (초음파)
+		// Operate every 10ms
 		while ((now - rateTimer) < ControlPeriod) {
 			//~ usleep(40000); //5ms for under 60cm 20ms for under 100cm 40ms for 200cm
-			// 초음파 속도에 맞춰 Reading
-			if (((now - sonarTimer) >= 60000) && sonarflag) {
+			// Read to sonar sensor speed
+			if (((now - sonarTimer) >= 60000) && sonarFlag) {
 				sonar0.distance = sonar0.GetValues();
-				sonarflag = false;
+				sonarFlag = false;
 			}
-			//~ now=RTMath::currentUSecsSinceEpoch();
 			now = micros();
 		}
 		rateTimer = now;
@@ -423,7 +400,8 @@ void  INThandler(int sig) {
 
 	signal(sig, SIG_IGN);
 
-	close(file);
+	fclose(fp);
+
 	exit(0);
 }
 
