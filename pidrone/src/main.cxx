@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 	}
 
 
-	// ¹«ÇÑ ·çÇÁ
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	while (1) {
 		tokold = micros();
 
@@ -404,7 +404,3 @@ void  INThandler(int sig) {
 
 	exit(0);
 }
-
-
-
-

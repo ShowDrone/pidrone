@@ -69,7 +69,7 @@ void doMotor(bool dir, int val) {
 
 }
 
-float ratio = 360. / 270. / 64.; // 예시, 회전각도값/감속기비율/1회전펄스 한바퀴에 64펄스 감속기에의해 270번바퀴,1바퀴에 17280 펄스,0.020도제어가능
+float ratio = 360./420.;
 DC dc0 = { 4,5,17,18,0,-90,90,0.5,2.5,OK }; // 4,5 are pca pin,  bcm17,18 are physical pin 11,12 
 
 float ratio = 360. / 270. / 64.;

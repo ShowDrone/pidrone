@@ -94,7 +94,7 @@ DC cm1 = { 13,0,0,-90,90,1,2,OK };
 DC bz = { 14,0,0,0,255,0,50,OK };
 
 
-// «… ∫Œ¡∑
+// ÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ
 BL bl0 = { 8,0,0,5000,0.7,2,OK };
 BL bl1 = { 9,0,0,5000,0.7,2,OK };
 
@@ -104,7 +104,7 @@ PID yaw = { 8,4,4,6,628,0.01,0,0,0,0,1,2,0,0,0 };
 PLANT plant = { 0.1,10,100,0,0,0 };
 
 
-float ratio = 360. / 270. / 64.; // øπΩ√, »∏¿¸∞¢µµ∞™/∞®º”±‚∫Ò¿≤/1»∏¿¸∆ﬁΩ∫ «—πŸƒ˚ø° 64∆ﬁΩ∫ ∞®º”±‚ø°¿««ÿ 270π¯πŸƒ˚,1πŸƒ˚ø° 17280 ∆ﬁΩ∫,0.020µµ¡¶æÓ∞°¥…
+float ratio = 360/420;
 int pwid;
 int pin_base = 300; // Value to add to ID
 int max_pwm = 4096;
@@ -193,15 +193,17 @@ void setThrottle(BL& bl, int input) {
 	//~ printf("id=%i,tick=%i\r\n",id,tick);
 }
 
-// ¿Ã∏ß setServo∑Œ ∫Ø∞Ê ø‰∏¡
-// ∂Û¡Ó∫£∏Æ∆ƒ¿Ãø°º≠ »Æ¿Œø‰∏¡
-void setAngle(DC& dc, float input) {	// ±‚¡∏∞™ 0.5~2.5
+
+void setAngle(DC& dc, float input) {	// ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ 0.5~2.5
 	float mils = map(input, dc.min, dc.max, dc.tmin, dc.tmax);
-	// ∞¢µµ -> ∆ﬁΩ∫±Ê¿Ã ∫Ø»Ø
 	int tick = calcTicks(mils, pwmfreq);// 50Hz
 	int id = dc.pwmid + pin_base; // id 0-15, 16 all pin
 	pwmWrite(id, tick); // 0~4095 
 	//~ printf("id=%i,tick=%i\r\n",id,tick);
+}
+
+void setEnMotor(DC& dc, float input) {
+
 }
 
 // Interrupt func
