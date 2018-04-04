@@ -6,14 +6,14 @@ int slaveB;
 float bldcSpeed;
 bool servoMode;
 bool autoPilotMode;
-byte yawLow;
-byte yawHigh;
-byte yawDecimal;
-byte enTargetPosA;
-byte enTargetPosA;
+int yawLow;
+int yawHigh;
+int yawDecimal;
+int enTargetPosA;
+int enTargetPosA;
 
 
-void setI2C (byte _id0, byte _id1) {
+void setI2C (int _id0, int _id1) {
     slaveA_id = wiringPiI2CSetup(_id0);
     slaveB_id = wiringPiI2CSetup(_id1);
     int valueA = wiringPiI2CWrite(slaveA_id, 1);

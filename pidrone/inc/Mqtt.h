@@ -63,24 +63,24 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 				printf("dcgh setValue=%.1f\r\n", dcgh.setValue);
 		}
 		else if (getid == 4) {
-   	   		en0.setValue = getValue;
+   	   		em0.setValue = getValue;
    			if(MQTT_DEBUG == 1)
-        		printf("en0 setValue=%.1f\r\n", en0.setValue);
+        		printf("em0 setValue=%.1f\r\n", em0.setValue);
    		}
     	else if (getid == 5) {
-     		en1.setValue = getValue;
+     		em1.setValue = getValue;
       		if (MQTT_DEBUG == 1)
-        		printf("en1 setValue=%.1f\r\n", en1.setValue);
+        		printf("em1 setValue=%.1f\r\n", em1.setValue);
     	}
    		else if (getid == 6) {
-      		en2.setValue = getValue;
+      		em2.setValue = getValue;
       		if (MQTT_DEBUG == 1)
-        		printf("en2 setValue=%.1f\r\n", en2.setValue);
+        		printf("em2 setValue=%.1f\r\n", em2.setValue);
     	}
     	else if (getid == 7) {
-      		en3.setValue = getValue;
+      		em3.setValue = getValue;
       		if (MQTT_DEBUG == 1)
-        		printf("en3 setValue=%.1f\r\n", en3.setValue);
+        		printf("em3 setValue=%.1f\r\n", em3.setValue);
     	}
     	else if (getid == 10) {
      		sm0.setValue = getValue;
@@ -118,9 +118,9 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		rpi.setValue = 4;
 		msg = (char *)message->payload;
 		s1 = strtok(msg, ",");
-		en0.setValue = atof(s1);
+		em0.setValue = atof(s1);
 		s1 = strtok(NULL, ",");
-		en1.setValue = atof(s1);
+		em1.setValue = atof(s1);
 		s1 = strtok(NULL, ",");
 		myAzimuth.final = atof(s1);
 		s1 = strtok(NULL, ",");
@@ -129,7 +129,7 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		dcgp.setValue = atof(s1);
 		s1 = strtok(NULL, "\r");
 		dcgh.setValue = atof(s1);
-		printf("input : en0 %f, en1 %f, yaw %f, bl %i, gp %f gh %f \r\n",en0.setValue, en1.setValue, bldcSpeed, dcgp.setValue, dcgh.setValue);
+		printf("input : em0 %f, em1 %f, yaw %f, bl %i, gp %f gh %f \r\n",em0.setValue, em1.setValue, bldcSpeed, dcgp.setValue, dcgh.setValue);
 	} 
 
 	mosquitto_topic_matches_sub("pidrone/CMD/FG/get", message->topic, &match);
@@ -177,9 +177,9 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		if (getid == 4) {
 			/*
 			s1 = strtok(NULL, ",");
-			en0.max = atof(s1);
+			em0.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			en0.min = atof(s1);
+			em0.min = atof(s1);
 			s1 = strtok(NULL, ",");
 			int tmax = atof(s1);	// 필요없는 데이터
 			s1 = strtok(NULL, "");
@@ -190,9 +190,9 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		if (getid == 5) {
 			/*
 			s1 = strtok(NULL, ",");
-			en1.max = atof(s1);
+			em1.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			en1.min = atof(s1);
+			em1.min = atof(s1);
 			s1 = strtok(NULL, ",");
 			int tmax = atof(s1);
 			s1 = strtok(NULL, "");
@@ -203,20 +203,20 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		if (getid == 6) {
 			/*
 			s1 = strtok(NULL, ",");
-			en2.max = atof(s1);
+			em2.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			en2.min = atof(s1);
+			em2.min = atof(s1);
 			s1 = strtok(NULL, ",");
-			en2.tmax = atof(s1);
+			em2.tmax = atof(s1);
 			s1 = strtok(NULL, "");
-			en2.tmin = atof(s1);
+			em2.tmin = atof(s1);
 			*/
 		}
 
 		if (getid == 7) {
 			/*
 			s1 = strtok(NULL, ",");
-			en3.max = atof(s1);
+			em3.max = atof(s1);
 			s1 = strtok(NULL, ",");
 			dc3.min = atof(s1);
 			s1 = strtok(NULL, ",");

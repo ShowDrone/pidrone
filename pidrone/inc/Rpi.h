@@ -26,6 +26,7 @@ typedef struct Led {
 } LED;
 
 RPI rpi = { 0,OK };
+LED led;
 
 // �� ����
 

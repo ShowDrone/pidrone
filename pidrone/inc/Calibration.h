@@ -12,7 +12,7 @@
 
 
 void setBldcCalibration(bool CALIBRATION_DEBUG) {
-
+/*
 	if (CALIBRATION_DEBUG == 1) {
 		printf("BLDC Calibration Start\n");
 	}
@@ -43,6 +43,6 @@ void setBldcCalibration(bool CALIBRATION_DEBUG) {
 
 void setDcCalibration() {
 }
-
+*/
 
 #endif
