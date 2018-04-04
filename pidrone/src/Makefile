@@ -2,7 +2,7 @@ CC := g++
 
 EXTRAINCDIRS += -I "../inc"
 EXTRALDFLAGS += -L/usr/local/lib -L"../lib"
-EXTRALIBS += -lRTIMULib -lwiringPi -lm -lmosquitto -lwiringPiPca9685 -lpthread -lwiringPi
+EXTRALIBS += -lwiringPi -lm -lmosquitto -lpthread -lwiringPi
 
 CFLAGS += -O2 -W -Wall
 

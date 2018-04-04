@@ -3,11 +3,12 @@
 
 #include <mosquitto.h>
 #include "Rpi.h"
+#include "control.h"
 #include <string.h>
 #include <cstdlib>
 #include "Led.h"
 
-#define MQTT_DEBUG 1 // MQTT ºÎºĞ µğ¹ö±× ¸Ş½ÃÁö Ãâ·Â Á¤ÀÇ 1ÀÌ¸é Ãâ·Â, 0ÀÌ¸é ¹ÌÃâ·Â
+#define MQTT_DEBUG 1 // MQTT ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ş½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 1ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½, 0ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 
 struct mosquitto *mosq = NULL;
 char *mqbuf = (char *)malloc(70 * sizeof(char));
@@ -31,19 +32,7 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		rpi.setValue = atoi(msg);
 
 		if (rpi.setValue == 0) {
-			setAngle(dc0, 0);
-			setAngle(dc1, 0);
-			setAngle(dc2, 0);
-			setAngle(dc3, 0);
-			setAngle(cm0, 0);
-			setAngle(cm1, 0);
-			setAngle(dcgm, 0);
-			setAngle(dcgh, 0);
-			setAngle(dcgp, 0);
-			pca9685PWMReset(pwid);
-			setThrottle(bl0, 0);
-			setThrottle(bl1, 0);
-			setAngle(bz, 255);
+			// 0ìœ¼ë¡œ ëª¨í„° ë° ì „ë¶€ ì…‹í•˜ëŠ” ì½”ë“œ 
 		}
 	}
 
@@ -61,48 +50,48 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		if (getid == 1) {
 			dcgm.setValue = getValue;
 			if(MQTT_DEBUG == 1)
-				printf("gymbal mode id= %i setValue=%.1f\r\n", dcgm.id, dcgm.setValue);
+				printf("dcgm setValue=%.1f\r\n", dcgm.setValue);
 		}
 		else if (getid == 2) {
 			dcgp.setValue = getValue;
 			if(MQTT_DEBUG == 1)
-				printf("gymbal pitch id= %i setValue=%.1f\r\n", dcgp.id, dcgp.setValue);
+				printf("dcgp setValue=%.1f\r\n", dcgp.setValue);
 		}
 		else if (getid == 3) {
 			dcgh.setValue = getValue;
 			if(MQTT_DEBUG == 1)
-				printf("gymbal head id= %i setValue=%.1f\r\n", dcgh.id, dcgh.setValue);
+				printf("dcgh setValue=%.1f\r\n", dcgh.setValue);
 		}
 		else if (getid == 4) {
-			dc0.setValue = getValue;
-			if(MQTT_DEBUG == 1)
-				printf("dc0 id= %i setValue=%.1f\r\n", dc0.id, dc0.setValue);
-		}
-		else if (getid == 5) {
-			dc1.setValue = getValue;
-			if (MQTT_DEBUG == 1)
-				printf("dc1 id= %i setValue=%.1f\r\n", dc1.id, dc1.setValue);
-		}
-		else if (getid == 6) {
-			dc2.setValue = getValue;
-			if (MQTT_DEBUG == 1)
-				printf("dc2 id= %i setValue=%.1f\r\n", dc2.id, dc2.setValue);
-		}
-		else if (getid == 7) {
-			dc3.setValue = getValue;
-			if (MQTT_DEBUG == 1)
-				printf("dc3 id= %i setValue=%.1f\r\n", dc3.id, dc3.setValue);
-		}
-		else if (getid == 10) {
-			cm0.setValue = getValue;
-			if (MQTT_DEBUG == 1)
-				printf("cm0 id= %i setValue=%.1f\r\n", cm0.id, cm0.setValue);
-		}
-		else if (getid == 11) {
-			cm1.setValue = getValue;
-			if (MQTT_DEBUG == 1)
-				printf("cm1 id= %i setValue=%.1f\r\n", cm1.id, cm1.setValue);
-		}
+   	   		en0.setValue = getValue;
+   			if(MQTT_DEBUG == 1)
+        		printf("en0 setValue=%.1f\r\n", en0.setValue);
+   		}
+    	else if (getid == 5) {
+     		en1.setValue = getValue;
+      		if (MQTT_DEBUG == 1)
+        		printf("en1 setValue=%.1f\r\n", en1.setValue);
+    	}
+   		else if (getid == 6) {
+      		en2.setValue = getValue;
+      		if (MQTT_DEBUG == 1)
+        		printf("en2 setValue=%.1f\r\n", en2.setValue);
+    	}
+    	else if (getid == 7) {
+      		en3.setValue = getValue;
+      		if (MQTT_DEBUG == 1)
+        		printf("en3 setValue=%.1f\r\n", en3.setValue);
+    	}
+    	else if (getid == 10) {
+     		sm0.setValue = getValue;
+      		if (MQTT_DEBUG == 1)
+        		printf("sm0 setValue=%.1f\r\n", sm0.setValue);
+  	    }
+    	else if (getid == 11) {
+      		sm1.setValue = getValue;
+      		if (MQTT_DEBUG == 1)
+        		printf("sm1 setValue=%.1f\r\n", sm1.setValue);
+   		}
 	}
 
 	mosquitto_topic_matches_sub("pidrone/CMD/BL", message->topic, &match);
@@ -113,14 +102,14 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		getid = atoi(s1);
 		getValue = atof(s2);
 		if (getid == 8) {
-			bl0.setValue = (int)getValue;
+			bldcSpeed = (int)getValue;
 			if (MQTT_DEBUG == 1)
-				printf("bldc0 id %i command=%i\r\n", bl0.id, bl0.setValue);
+				printf("bldc command=%i\r\n", bldcSpeed);
 		}
 		if (getid == 9) {
-			bl1.setValue = (int)getValue;
+			bldcSpeed = (int)getValue;
 			if (MQTT_DEBUG == 1)
-				printf("bldc1 %i command=%i\r\n", bl1.id, bl1.setValue);
+				printf("bldc command=%i\r\n", bldcSpeed);
 		}
 	}
 
@@ -129,35 +118,27 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		rpi.setValue = 4;
 		msg = (char *)message->payload;
 		s1 = strtok(msg, ",");
-		roll.r = atof(s1)*jgainr;
+		en0.setValue = atof(s1);
 		s1 = strtok(NULL, ",");
-		pitch.r = atof(s1)*jgainp;
+		en1.setValue = atof(s1);
 		s1 = strtok(NULL, ",");
-		yaw.r = yaw.r + jgainy*atof(s1);
-		if (yaw.r>180.0) {
-			yaw.r = 180.0;
-		}
-		if (yaw.r<-180.0) {
-			yaw.r = -180.0;
-		}
+		myAzimuth.final = atof(s1);
 		s1 = strtok(NULL, ",");
-		bl0.setValue = (int)(atof(s1)*jgainb);
-		bl1.setValue = bl0.setValue;
+		bldcSpeed = (int)atof(s1;
 		s1 = strtok(NULL, ",");
-		dcgp.setValue = (atof(s1)*jgaingp);
+		dcgp.setValue = atof(s1);
 		s1 = strtok(NULL, "\r");
-
-		dcgh.setValue = (atof(s1)*jgaingh);
-
-		printf("input : roll %f, pitch %f, yaw %f, bl %i, gp %f, gh %f\r\n", roll.r, pitch.r, yaw.r, bl0.setValue, dcgp.setValue, dcgh.setValue);
-	}
+		dcgh.setValue = atof(s1);
+		printf("input : en0 %f, en1 %f, yaw %f, bl %i, gp %f gh %f \r\n",en0.setValue, en1.setValue, bldcSpeed, dcgp.setValue, dcgh.setValue);
+	} 
 
 	mosquitto_topic_matches_sub("pidrone/CMD/FG/get", message->topic, &match);
 	if (match) {
 		msg = (char *)message->payload;
 		s1 = strtok(msg, "");
 		if (atoi(s1) == 0) {
-			// ¿äÃ»¿¡ ÀÇÇÑ Ãâ·ÂÀÌ¶ó µğ¹ö±×¿¡ ÀÇÇÑ Ãâ·Â ¹«½ÃÃ³¸®¸¦ ÇÏÁö ¾ÊÀ½.
+			// ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ì¶ï¿½ ï¿½ï¿½ï¿½ï¿½×¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+			/*
 			printf("dc0 max=%f,min=%f,tmax=%f,tmin=%f\r\n", dc0.max, dc0.min, dc0.tmax, dc0.tmin);
 			sprintf(mqbuf, "%u,%f,%f,%f,%f\r\n", dc0.id, dc0.max, dc0.min, dc0.tmax, dc0.tmin);
 			mq_send("pidrone/FG", mqbuf);
@@ -184,6 +165,7 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 			printf("cm1 max=%f,min=%f,tmax=%f,tmin=%f\r\n", cm1.max, cm1.min, cm1.tmax, cm1.tmin);
 			sprintf(mqbuf, "%u,%f,%f,%f,%f\r\n", cm1.id, cm1.max, cm1.min, cm1.tmax, cm1.tmin);
 			mq_send("pidrone/FG", mqbuf);
+			*/
 		}
 	}
 
@@ -193,50 +175,59 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		s1 = strtok(msg, ",");
 		getid = atoi(s1);
 		if (getid == 4) {
+			/*
 			s1 = strtok(NULL, ",");
-			dc0.max = atof(s1);
+			en0.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc0.min = atof(s1);
+			en0.min = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc0.tmax = atof(s1);
+			int tmax = atof(s1);	// í•„ìš”ì—†ëŠ” ë°ì´í„°
 			s1 = strtok(NULL, "");
-			dc0.tmin = atof(s1);
+			int tmin = atof(s1);	// í•„ìš”ì—†ëŠ” ë°ì´í„°
+			*/
 		}
 
 		if (getid == 5) {
+			/*
 			s1 = strtok(NULL, ",");
-			dc1.max = atof(s1);
+			en1.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc1.min = atof(s1);
+			en1.min = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc1.tmax = atof(s1);
+			int tmax = atof(s1);
 			s1 = strtok(NULL, "");
-			dc1.tmin = atof(s1);
+			int tmin = atof(s1);
+			*/
 		}
 
 		if (getid == 6) {
+			/*
 			s1 = strtok(NULL, ",");
-			dc2.max = atof(s1);
+			en2.max = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc2.min = atof(s1);
+			en2.min = atof(s1);
 			s1 = strtok(NULL, ",");
-			dc2.tmax = atof(s1);
+			en2.tmax = atof(s1);
 			s1 = strtok(NULL, "");
-			dc2.tmin = atof(s1);
+			en2.tmin = atof(s1);
+			*/
 		}
 
 		if (getid == 7) {
+			/*
 			s1 = strtok(NULL, ",");
-			dc3.max = atof(s1);
+			en3.max = atof(s1);
 			s1 = strtok(NULL, ",");
 			dc3.min = atof(s1);
 			s1 = strtok(NULL, ",");
 			dc3.tmax = atof(s1);
 			s1 = strtok(NULL, "");
 			dc3.tmin = atof(s1);
+			*/
 		}
 
 		if (getid == 8) {
+			/*
 			s1 = strtok(NULL, ",");
 			bl0.max = atoi(s1);
 			s1 = strtok(NULL, ",");
@@ -245,9 +236,11 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 			bl0.tmax = atof(s1);
 			s1 = strtok(NULL, "");
 			bl0.tmin = atof(s1);
+			*/
 		}
 
 		if (getid == 9) {
+			/*
 			s1 = strtok(NULL, ",");
 			bl1.max = atoi(s1);
 			s1 = strtok(NULL, ",");
@@ -256,8 +249,10 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 			bl1.tmax = atof(s1);
 			s1 = strtok(NULL, "");
 			bl1.tmin = atof(s1);
+			*/
 		}
 		if (getid == 10) {
+			/*
 			s1 = strtok(NULL, ",");
 			cm0.max = atof(s1);
 			s1 = strtok(NULL, ",");
@@ -266,8 +261,10 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 			cm0.tmax = atof(s1);
 			s1 = strtok(NULL, "");
 			cm0.tmin = atof(s1);
+			*/
 		}
 		if (getid == 11) {
+			/*
 			s1 = strtok(NULL, ",");
 			cm1.max = atof(s1);
 			s1 = strtok(NULL, ",");
@@ -276,6 +273,7 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 			cm1.tmax = atof(s1);
 			s1 = strtok(NULL, "");
 			cm1.tmin = atof(s1);
+			*/
 		}
 	}
 
@@ -296,11 +294,10 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 
 void mq_init() {
 	mosquitto_lib_init();
-
 	mosq = mosquitto_new(NULL, true, NULL);
 	mosquitto_username_pw_set(mosq, user, pw);
 	mosquitto_message_callback_set(mosq, message_callback);
-	if (mosquitto_connect(mosq, "58.224.86.126", 1883, 60)) {
+	if (mosquitto_connect(mosq, "168.188.56.50", 1883, 60)) {
 		printf("mqtt connect error\r\n");;
 	}
 	mosquitto_subscribe(mosq, NULL, "pidrone/CMD/#", 0);

@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	int tokcnt = 1;
 	uint64_t displayTimer;
 	uint64_t now;
-
+ 
 	uint32_t ControlPeriod = 10000;		//10ms
 	uint32_t ControlPeriod_s = 1000000; //1000ms
 	uint32_t DisplayPeriod = 100000;	//100ms
@@ -60,14 +60,6 @@ int main(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	// init Encoder Pin
-	pinMode(dc0.encoderA, INPUT);
-	pinMode(dc0.encoderB, INPUT);
-	pinMode(dc1.encoderA, INPUT);
-	pinMode(dc1.encoderB, INPUT);
-	pinMode(dc2.encoderA, INPUT);
-	pinMode(dc2.encoderB, INPUT);
-	pinMode(dc3.encoderA, INPUT);
-	pinMode(dc3.encoderB, INPUT);
 
 	// Init Sonar ID
 	uint16_t sonarid0 = 0x71;
@@ -81,60 +73,18 @@ int main(int argc, char **argv)
 	if (MAIN_DEBUG == 1) {
 		printf("\nPROGRAM START\n");
 	}
-
 	
 	// Setup wiringPi
 	if (wiringPiSetup() < 0) {
 		fprintf(stderr, "Unable to setup wiringPi: %s\n", strerror(errno));
 		return 1;
 	}
-
-	if (wiringPiISR(dc0.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc0.encoderA ISR error occured\n", stderr);
-		return 1;
-	}
-
-	if (wiringPiISR(dc0.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc0.encoderB ISR error occured\n", stderr);
-		return 1;
-	}
-
-	if (wiringPiISR(dc1.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc1.encoderA ISR error occured\n", stderr);
-		return 1;
-	}
-
-	if (wiringPiISR(dc1.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc1.encoderB ISR error occured\n", stderr);
-		return 1;
-	}
-	if (wiringPiISR(dc2.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc2.encoderA ISR error occured\n", stderr);
-		return 1;
-	}
-
-	if (wiringPiISR(dc2.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc2.encoderB ISR error occured\n", stderr);
-		return 1;
-	}
-	
-	if (wiringPiISR(dc3.encoderA, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc3.encoderA ISR error occured\n", stderr);
-		return 1;
-	}
-
-	if (wiringPiISR(dc3.encoderB, INT_EDGE_BOTH, dc0EncoderA) < 0) {
-		fputs("dc3.encoderB ISR error occured\n", stderr);
-		return 1;
-	}
-
-
 	// Init LED
 	if (MAIN_DEBUG == 1) {
 		printf("Init Led Start\n");
 	}
 
-	ledinit();
+	initLed();
 	setLed();
 	setBuffer(led.setValue, displayBuffer, length);
 
@@ -183,60 +133,15 @@ int main(int argc, char **argv)
 		printf("Init Pca9685 Start\n");
 	}
 
-	pwid = pca9685Setup(pin_base, 0x40, pwmfreq); // return ID value
-	if (pwid < 0) {
-		if (MAIN_DEBUG == 1)
-			printf("Error init setup\n");  // if pca9685Setup fails
-	}
-	pca9685PWMReset(pwid);  // Reset pcb9685 pin to pwid
-
-
-	if(MAIN_DEBUG == 1) {
-		printf("Init Pca9685 Complete\n");
-	}
-
-	if(CALI == 1) {
-		setBldcCalibration(0); // 1 = output debug msg, 0 = no output
-		delay(1000);
-	}
-
-
 	FILE *fp;
 	fp = fopen("/home/pi/Code/pidrone/src/pidgain.txt", "a");
 	if (fp == NULL) {
 		fprintf(stderr,"Can't open pidgain.txt file\n");
 		// add basci pidgain code
 	}
-	while (!feof(fp)) {
-		fscanf(fp, "%f%f%f", &kp, &ki, &kd);
-	}
-
-
-	if (MAIN_DEBUG == 1) {
-		printf("Set Dc&Bldc start\n");
-	}
-
-	// set BLDC Motor
-	setThrottle(bl0, 0);
-	setThrottle(bl1, 0);
-
-	
-	// set DC Motor
-	setAngle(dc0, 0);
-	setAngle(dc1, 0);
-	setAngle(dc2, 0);
-	setAngle(dc3, 0);
-	setAngle(dcgm, 0);
-	setAngle(dcgh, 0);
-	setAngle(dcgp, 0);
-	//~ setAngle(bz,255);
-	delay(2000);     
-
-
-	if(MAIN_DEBUG == 1) {
-		printf("Set Dc&Bldc Complete\n");
-	}
-
+	//while (!feof(fp)) {
+	//	fscanf(fp, "%f%f%f", &kp, &ki, &kd);
+	//}
 
 	if (MAIN_DEBUG == 1) {
 		printf("Enter the Loop\n");
@@ -255,7 +160,7 @@ int main(int argc, char **argv)
 			//~ dc2.setValue = ;
 
 			if (MAIN_DEBUG == 1) {
-				printf("dc0.setValue=\f, dc2,setValue=\f\r\n", dc0.setValue, dc2.setValue);
+				//printf("dc0.setValue=\f, dc2,setValue=\f\r\n", dc0.setValue, dc2.setValue);
 			}
 			
 		}
@@ -268,7 +173,7 @@ int main(int argc, char **argv)
 			//~ dc3.setValue = ;
 
 			if (MAIN_DEBUG == 1) {
-				printf("dc1.setValue=\f, dc3,setValue=\f\r\n", dc1.setValue, dc3.setValue);
+				//printf("dc1.setValue=\f, dc3,setValue=\f\r\n", dc1.setValue, dc3.setValue);
 			}
 		}
 
@@ -279,30 +184,9 @@ int main(int argc, char **argv)
 			//~ yawgain = ;
 
 			if (MAIN_DEBUG == 1) {
-				printf("yawgain=\f\r\n", yawgain);
+				//printf("yawgain=\f\r\n", yawgain);
 			}
 		}
-
-		// Edit value value
-
-		// BLDC Motor
-		setThrottle(bl0, bl0.setValue*(1 - yawgain)); // Yaw adjustment by prop's difference (Top)
-		setThrottle(bl1, bl1.setValue*(1 + yawgain)); // Yaw adjustment by prop's difference (Bottom)
-
-
-		// DC Motor
-		setAngle(dc0, dc0.setValue);
-		setAngle(dc1, dc1.setValue);
-		setAngle(dc2, dc2.setValue);
-		setAngle(dc3, dc3.setValue);
-		setAngle(cm0, cm0.setValue);
-		setAngle(cm1, cm1.setValue);
-
-		// Gymbol Motor
-		setAngle(dcgm, dcgm.setValue);
-		setAngle(dcgh, dcgh.setValue);
-		setAngle(dcgp, dcgp.setValue);
-
 
 		// Sonar
 		if (!sonarFlag) {
@@ -382,25 +266,7 @@ void  INThandler(int sig) {
 	}
 	gps_off();
 
-	setAngle(dc0, 0);
-	setAngle(dc1, 0);
-	setAngle(dc2, 0);
-	setAngle(dc3, 0);
-	setAngle(cm0, 0);
-	setAngle(cm1, 0);
-	setAngle(dcgm, 0);
-	setAngle(dcgh, 0);
-	setAngle(dcgp, 0);
-
-	pca9685PWMReset(pwid);
-
-	setAngle(bz, 255);
-	setThrottle(bl0, 0);
-	setThrottle(bl1, 0);
-
 	signal(sig, SIG_IGN);
-
 	fclose(fp);
-
 	exit(0);
 }

@@ -94,7 +94,7 @@ void setBuffer(const char *text,uint16_t (*dBuffer)[15*8],int& length) {
 	}
 }
 
-void ledinit() {
+void initLed() {
 		i2cbus   = 1;
         address  = 112;
         daddress = 0;
