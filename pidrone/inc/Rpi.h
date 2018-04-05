@@ -1,12 +1,10 @@
 #ifndef RPI_H
 #define RPI_H
 
-#include <pca9685.h>
 #include <wiringPi.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 
 typedef struct Rpi {
