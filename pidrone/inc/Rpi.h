@@ -8,24 +8,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {
-	OK,
-	ERROR
-} STATUS;
 
 typedef struct Rpi {
 	int setValue;
-	STATUS stat;
 } RPI;
-
-LED led = { 0,OK };
 
 typedef struct Led {
 	char *setValue;
-	STATUS stat;
-} LED;
+}LED;
 
-RPI rpi = { 0,OK };
+RPI rpi = { 0 };
 LED led;
 
 // �� ����

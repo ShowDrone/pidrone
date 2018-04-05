@@ -124,7 +124,7 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
 		s1 = strtok(NULL, ",");
 		myAzimuth.final = atof(s1);
 		s1 = strtok(NULL, ",");
-		bldcSpeed = (int)atof(s1;
+		bldcSpeed = (int)atof(s1);
 		s1 = strtok(NULL, ",");
 		dcgp.setValue = atof(s1);
 		s1 = strtok(NULL, "\r");
@@ -307,7 +307,7 @@ void mq_start() {
 	int stat = mosquitto_loop_start(mosq);
 	while (stat) {
 		printf("connection error!\r\n");
-		usleep(20000);
+		//usleep(20000);
 		mosquitto_reconnect(mosq);
 	}
 }

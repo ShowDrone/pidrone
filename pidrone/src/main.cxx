@@ -37,8 +37,7 @@
 using namespace std;
 void  INThandler(int sig);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	uint64_t rateTimer;
 	uint64_t rateTimer_s;
 	uint64_t sonarTimer;
@@ -58,7 +57,7 @@ int main(int argc, char **argv)
 
 	// interrupt for exit
 
-void  INThandler(int sig)
+	signal(SIGINT, INThandler);
 
 	// init Encoder Pin
 

@@ -14,23 +14,18 @@ extern void transmite_SlaveB();
 extern void request_SlaveA();
 extern void request_SlaveB()
 
-typedef enum {
-	OK,2
-	ERROR
-} STATUS;
-
 typedef struct Em {
   	float setValue;
   	float deg;
 	float encoderPos;
 	float encoderPosDecimal;
-	STATUS stat;
+	//STATUS stat;
 } EM;
 
-EM em0 = {0, 0, 0, 0, OK};
-EM em1 = {0, 0, 0, 0, OK};
-EM em2 = {0, 0, 0, 0, OK};
-EM em3 = {0, 0, 0, 0, OK};
+EM em0 = {0, 0, 0, 0};
+EM em1 = {0, 0, 0, 0};
+EM em2 = {0, 0, 0, 0};
+EM em3 = {0, 0, 0, 0};
 
 typedef struct Azimuth {
   int low;
@@ -45,11 +40,11 @@ AZIMUTH targetAzimuth = {0, 0, 0, 0};
 typedef struct Sm {
   int pos;
   float setValue;
-  STATUS stat;
+  //STATUS stat;
 } SM;
 
-SM sm0 = {0, 0, OK};
-SM sm1 = {0, 0, OK};
+SM sm0 = {0, 0};
+SM sm1 = {0, 0};
 
 typedef struct Dc {
 	float setValue;
@@ -57,7 +52,7 @@ typedef struct Dc {
 	float max;
 	float tmin;
 	float tmax;
-	STATUS stat;
+	//STATUS stat;
 } DC;
 
 // pca9685, 아두이노? 처리문제 확인 일단 제거.
