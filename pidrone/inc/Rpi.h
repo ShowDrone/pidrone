@@ -15,7 +15,7 @@ typedef struct Rpi {
 
 typedef struct Led {
 	char *setValue;
-}LED;
+} LED;
 
 RPI rpi = { 0 };
 LED led;

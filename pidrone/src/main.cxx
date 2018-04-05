@@ -35,9 +35,9 @@
 #define MAIN_DEBUG 1  // Debug msg output
 #define CALI 0		  // execute Calibration
 using namespace std;
-void  INThandler(int sig);
 
 int main(int argc, char **argv) {
+	/*
 	uint64_t rateTimer;
 	uint64_t rateTimer_s;
 	uint64_t sonarTimer;
@@ -59,7 +59,6 @@ int main(int argc, char **argv) {
 
 	signal(SIGINT, INThandler);
 
-	// init Encoder Pin
 
 	// Init Sonar ID
 	uint16_t sonarid0 = 0x71;
@@ -253,9 +252,10 @@ int main(int argc, char **argv) {
 		cnt++;
 	}
 	return 0;
+	*/
 }
 
-void  INThandler(int sig) {
+void INThandler(int sig) {
 	// Closing file and turning off Matrix
 	unsigned short int clear[] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
 	displayImage(clear, res, daddress, file);
@@ -265,6 +265,8 @@ void  INThandler(int sig) {
 		res = i2c_smbus_write_byte(file, daddress);
 	}
 	gps_off();
+
+	signal(sig, SIG_IGN);
 
 	signal(sig, SIG_IGN);
 	//fclose(fp);

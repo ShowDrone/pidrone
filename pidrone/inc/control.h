@@ -22,11 +22,6 @@ typedef struct Em {
 	//STATUS stat;
 } EM;
 
-EM em0 = {0, 0, 0, 0};
-EM em1 = {0, 0, 0, 0};
-EM em2 = {0, 0, 0, 0};
-EM em3 = {0, 0, 0, 0};
-
 typedef struct Azimuth {
   int low;
   int high;
@@ -34,17 +29,11 @@ typedef struct Azimuth {
   float final;
 } AZIMUTH;
 
-AZIMUTH myAzimuth = {0, 0, 0, 0};
-AZIMUTH targetAzimuth = {0, 0, 0, 0};
-
 typedef struct Sm {
   int pos;
   float setValue;
   //STATUS stat;
 } SM;
-
-SM sm0 = {0, 0};
-SM sm1 = {0, 0};
 
 typedef struct Dc {
 	float setValue;
@@ -55,10 +44,19 @@ typedef struct Dc {
 	//STATUS stat;
 } DC;
 
+EM em0 = {0, 0, 0, 0};
+EM em1 = {0, 0, 0, 0};
+EM em2 = {0, 0, 0, 0};
+EM em3 = {0, 0, 0, 0};
+AZIMUTH myAzimuth = {0, 0, 0, 0};
+AZIMUTH targetAzimuth = {0, 0, 0, 0};
+SM sm0 = {0, 0};
+SM sm1 = {0, 0};
+
 // pca9685, 아두이노? 처리문제 확인 일단 제거.
-DC dcgm = { 0,-90,90,0.5,2.5,OK };  //  mode of gymbal
-DC dcgp = { 0,-90,90,0.5,2.5,OK };    //  gymbal pitch
-DC dcgh = { 0,-90,90,0.5,2.5,OK };    //  gymbal heading
+DC dcgm = { 0,-90,90,0.5,2.5 };  //  mode of gymbal
+DC dcgp = { 0,-90,90,0.5,2.5 };    //  gymbal pitch
+DC dcgh = { 0,-90,90,0.5,2.5 };    //  gymbal heading
 
 
 void setAngle(DC& dc, float input) {	// ������ 0.5~2.5
