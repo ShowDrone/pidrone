@@ -1,14 +1,14 @@
 
 #include <control.h>
 
-int slaveA;
-int slaveB;
+uint8_t slaveA;
+uint8_t slaveB;
 float bldcSpeed;
 bool servoMode;
 bool autoPilotMode;
-int yawLow;
-int yawHigh;
-int yawDecimal;
+uint8_t yawLow;
+uint8_t yawHigh;
+uint8_t yawDecimal;
 int enTargetPosA;
 int enTargetPosA;
 

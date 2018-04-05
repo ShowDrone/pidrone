@@ -39,10 +39,12 @@ char *pw = "vkdlemfhs"; // Raspberry Pi Password
 void lBeep() {
 	if (endCount > 0) {
 		if (startCount < endCount) {
-			if (startCount % 2 == 0)
-				setAngle(bz, 0);    // buz on                                                                                                                                                                                        
-			else
-				setAngle(bz, 255); // buz off
+			if (startCount % 2 == 0) {
+				//setAngle(bz, 0);    // buz on                                                                                                                                                                                        
+			}
+			else {
+				//setAngle(bz, 255); // buz off
+			}
 			startCount++;
 		}
 		else {

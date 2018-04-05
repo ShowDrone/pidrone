@@ -15,7 +15,7 @@ extern void request_SlaveA();
 extern void request_SlaveB()
 
 typedef enum {
-	OK,
+	OK,2
 	ERROR
 } STATUS;
 
@@ -40,7 +40,7 @@ typedef struct Azimuth {
 } AZIMUTH;
 
 AZIMUTH myAzimuth = {0, 0, 0, 0};
-AZIMUTH targetAzimuth = {0, 0, 0, 0;
+AZIMUTH targetAzimuth = {0, 0, 0, 0};
 
 typedef struct Sm {
   int pos;
@@ -80,11 +80,11 @@ void setAngle(DC& dc, float input) {	// ������ 0.5~2.5
 extern float bldcSpeed;
 extern bool servoMode;
 extern bool autoPilotMode;
-extern int yawLow;
-extern int yawHigh;
-extern int yawDecimal;
+extern uint8_t yawLow;
+extern uint8_t yawHigh;
+extern uint8_t yawDecimal;
 extern int enTargetPosA;
 extern int enTargetPosA;
-extern int slaveA_id;
-extern int slaveB_id;
+extern uint8_t slaveA_id;
+extern uint8_t slaveB_id;
 #endif

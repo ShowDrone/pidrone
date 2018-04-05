@@ -57,7 +57,8 @@ int main(int argc, char **argv)
 	bool sonarFlag = true;
 
 	// interrupt for exit
-	signal(SIGINT, INThandler);
+
+void  INThandler(int sig)
 
 	// init Encoder Pin
 
@@ -267,6 +268,6 @@ void  INThandler(int sig) {
 	gps_off();
 
 	signal(sig, SIG_IGN);
-	fclose(fp);
+	//fclose(fp);
 	exit(0);
 }
